@@ -3,10 +3,9 @@ pipeline {
 
     environment {
         AWS_DEFAULT_REGION = "us-east-1"
-        AWS_ACCESS_KEY_ID     = credentials('aws jenkins key')
-        AWS_SECRET_ACCESS_KEY = credentials('aws jenkins key')
-    }
-
+        withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+    // some block
+}
     stages {
         stage('Checkout Code') {
             steps {
@@ -33,3 +32,4 @@ pipeline {
         }
     }
 }
+
