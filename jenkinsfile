@@ -2,34 +2,67 @@ pipeline {
     agent any
 
     environment {
-        AWS_DEFAULT_REGION = "us-east-1"
-        withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-    // some block
-}
+        AWS_DEFAULT_REGION = "ap-south-1"   // change if needed
+    }
+
     stages {
+
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/sreeragdevops/jenkins.git'
+                git branch: 'main',
+                    url: 'https://github.com/sreeragdevops/jenkins.git'
             }
         }
 
         stage('Terraform Init') {
             steps {
-                sh 'terraform init'
+                withCredentials([
+                    aws(
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY',
+                        credentialsId: 'aws-jenkins-demo'
+                    )
+                ]) {
+                    sh 'terraform init'
+                }
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                sh 'terraform plan'
+                withCredentials([
+                    aws(
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY',
+                        credentialsId: 'aws-jenkins-demo'
+                    )
+                ]) {
+                    sh 'terraform plan'
+                }
             }
         }
 
         stage('Terraform Apply') {
             steps {
-                sh 'terraform apply -auto-approve'
+                withCredentials([
+                    aws(
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY',
+                        credentialsId: 'aws-jenkins-demo'
+                    )
+                ]) {
+                    sh 'terraform apply -auto-approve'
+                }
             }
         }
     }
-}
 
+    post {
+        success {
+            echo "Terraform execution completed successfully 🎉"
+        }
+        failure {
+            echo "Terraform execution failed ❌"
+        }
+    }
+}
